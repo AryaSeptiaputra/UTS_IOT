@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Sensor Hidroponik</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        #data-container {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Data Sensor Hidroponik</h1>
+        <div id="data-container">
+            <p>Loading data...</p>
+        </div>
+    </div>
+
+    <script>
+        function fetchData() {
+            fetch('/data')
+                .then(response => response.json())
+                .then(data => {
+                    const dataContainer = document.getElementById('data-container');
+                    if (Object.keys(data).length === 0) {
+                        dataContainer.innerHTML = '<p>No data available</p>';
+                    } else {
+                        // Display the main data
+                        dataContainer.innerHTML = `
+                            <h3>Latest Data:</h3>
+                            <p><strong>Suhu Maksimum: </strong>${data.Suhumax || 'N/A'} °C</p>
+                            <p><strong>Suhu Minimum: </strong>${data.Suhumin || 'N/A'} °C</p>
+                            <p><strong>Suhu Rata-Rata: </strong>${data.Suhurata || 'N/A'} °C</p>
+                        `;
+
+                        // Display month_year_max data if available
+                        if (data.month_year_max && data.month_year_max.length > 0) {
+                            dataContainer.innerHTML += `<h4>Month-Year Max Data:</h4><ul>`;
+                            data.month_year_max.forEach(entry => {
+                                dataContainer.innerHTML += `<li><strong>Month-Year:</strong> ${entry.month_year || 'N/A'}</li>`;
+                            });
+                            dataContainer.innerHTML += `</ul>`;
+                        }
+
+                        // Display nilai_suhu_max_humid_max data if available
+                        if (data.nilai_suhu_max_humid_max && data.nilai_suhu_max_humid_max.length > 0) {
+                            dataContainer.innerHTML += `<h4>Temperature and Humidity Data Points:</h4><ul>`;
+                            data.nilai_suhu_max_humid_max.forEach((entry, index) => {
+                                dataContainer.innerHTML += `
+                                    <li><strong>Data Point ${index + 1}:</strong></li>
+                                    <ul>
+                                        <li><strong>Suhu:</strong> ${entry.Suhun || 'N/A'} °C</li>
+                                        <li><strong>Kelembapan:</strong> ${entry.humid || 'N/A'} %</li>
+                                        <li><strong>Kecerahan:</strong> ${entry.Kecerahan || 'N/A'}%</li>
+                                        <li><strong>Timestamp:</strong> ${entry.Timestamp || 'N/A'}</li>
+                                    </ul>
+                                `;
+                            });
+                            dataContainer.innerHTML += `</ul>`;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('data-container').innerHTML = '<p>Failed to load data.</p>';
+                });
+        }
+
+        // Fetch data every 5 seconds
+        setInterval(fetchData, 5000);
+
+        // Initial fetch when the page loads
+        fetchData();
+    </script>
+</body>
+</html>
